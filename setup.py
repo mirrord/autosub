@@ -1,13 +1,11 @@
 #!/usr/bin/env python
-from __future__ import unicode_literals
-
 try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
 
 long_description = (
-    'Autosub is a utility for automatic speech recognition and subtitle generation. '
+    'frankensub is a utility for automatic speech recognition and subtitle generation. '
     'It takes a video or an audio file as input, performs voice activity detection '
     'to find speech regions, makes parallel requests to Google Web Speech API to '
     'generate transcriptions for those regions, (optionally) translates them to a '
@@ -19,19 +17,14 @@ long_description = (
 )
 
 setup(
-    name='autosub',
-    version='0.4.0',
+    name='frankensub',
+    version='0.0.1',
     description='Auto-generates subtitles for any video or audio file',
     long_description=long_description,
-    author='Anastasis Germanidis',
-    author_email='agermanidis@gmail.com',
-    url='https://github.com/agermanidis/autosub',
-    packages=['autosub'],
-    entry_points={
-        'console_scripts': [
-            'autosub = autosub:main',
-        ],
-    },
+    author='Anastasis Germanidis, Dane Howard',
+    author_email='agermanidis@gmail.com, mirrord@gmail.com',
+    url='https://github.com/mirrord/frankensub',
+    packages=['frankensub'],
     install_requires=[
         'google-api-python-client>=1.4.2',
         'requests>=2.3.0',
