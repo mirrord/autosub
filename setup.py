@@ -27,7 +27,7 @@ setup(
     packages=['frankensub'],
     install_requires=[
         'pydub>=0.24.1',
-        'deep_tranlator>=1.3.4',
+        'deep_translator>=1.3.4',
         'SpeechRecognition>=3.8.1',
         'pysrt>=1.0.1',
         'progressbar2>=3.34.3',

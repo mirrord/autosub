@@ -3,8 +3,6 @@
 Defines autosub's main functionality.
 """
 
-import speech_recognition as sr
-from pydub import AudioSegment
 
 import argparse
 import audioop
@@ -13,7 +11,7 @@ import multiprocessing
 import os
 import subprocess
 import sys
-import tempfile
+from tempfile import NamedTemporaryFile
 import wave
 import json
 import requests
@@ -24,9 +22,10 @@ except ImportError:
 
 from progressbar import ProgressBar, Percentage, Bar, ETA
 
-from autosub.formatters import FORMATTERS
+from frankensub.formatters import FORMATTERS
+from frankensub.converters import Translator, SpeechRecognizer, FLACConverter
 
-from deep_translator import GoogleTranslator
+
 
 DEFAULT_SUBTITLE_FORMAT = 'srt'
 DEFAULT_CONCURRENCY = 10
@@ -47,78 +46,6 @@ def percentile(arr, percent):
     low_value = arr[int(floor)] * (ceil - index)
     high_value = arr[int(ceil)] * (index - floor)
     return low_value + high_value
-
-
-class FLACConverter(object): # pylint: disable=too-few-public-methods
-    """
-    Class for converting a region of an input audio or video file into a FLAC audio file
-    """
-    def __init__(self, source_path, include_before=0.25, include_after=0.25):
-        self.source_path = source_path
-        self.include_before = include_before
-        self.include_after = include_after
-
-    def __call__(self, region):
-        try:
-            start, end = region
-            start = max(0, start - self.include_before)
-            end += self.include_after
-            temp = tempfile.NamedTemporaryFile(suffix='.flac', delete=False)
-            command = ["ffmpeg", "-ss", str(start), "-t", str(end - start),
-                       "-y", "-i", self.source_path,
-                       "-loglevel", "error", temp.name]
-            use_shell = True if os.name == "nt" else False
-            subprocess.check_output(command, stdin=open(os.devnull), shell=use_shell)
-            return temp.read()
-
-        except KeyboardInterrupt:
-            return None
-
-
-class SpeechRecognizer(object): # pylint: disable=too-few-public-methods
-    """
-    Class for performing speech-to-text for an input FLAC file.
-    """
-    def __init__(self, rate=44100, retries=3):
-        self.rate = rate
-        self.retries = retries
-        self.recognizer = sr.Recognizer()
-
-    def __call__(self, data):
-        try:
-            temp = tempfile.NamedTemporaryFile(suffix='.flac', delete=False)
-            temp.write(data)
-            temp.seek(0)
-            with sr.AudioFile(temp.name) as source:
-                audio_data = self.recognizer.record(source)
-                try:
-                    resp = self.recognizer.recognize_google(audio_data)
-                except:
-                    return ''
-                return resp
-
-        except KeyboardInterrupt:
-            return None
-
-
-class Translator(object): # pylint: disable=too-few-public-methods
-    """
-    Class for translating a sentence from a one language to another.
-    """
-    def __init__(self, src, dst):
-        self.translator = GoogleTranslator(source=src, target=dst)
-
-    def __call__(self, sentence):
-        try:
-            if not sentence:
-                return None
-            try:
-                return self.translator.translate(sentence)
-            except:
-                return sentence
-
-        except KeyboardInterrupt:
-            return None
 
 
 def which(program):
@@ -149,7 +76,7 @@ def extract_audio(filename, channels=1, rate=16000):
     """
     Extract audio from an input file to a temporary WAV file.
     """
-    temp = tempfile.NamedTemporaryFile(suffix='.wav', delete=False)
+    temp = NamedTemporaryFile(suffix='.wav', delete=False)
     if not os.path.isfile(filename):
         print("The given file does not exist: {}".format(filename))
         raise Exception("Invalid filepath: {}".format(filename))
