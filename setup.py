@@ -26,8 +26,9 @@ setup(
     url='https://github.com/mirrord/frankensub',
     packages=['frankensub'],
     install_requires=[
-        'google-api-python-client>=1.4.2',
-        'requests>=2.3.0',
+        'pydub>=0.24.1',
+        'deep_tranlator>=1.3.4',
+        'SpeechRecognition>=3.8.1',
         'pysrt>=1.0.1',
         'progressbar2>=3.34.3',
         'six>=1.11.0',
